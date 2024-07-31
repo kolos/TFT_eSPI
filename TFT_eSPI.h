@@ -835,6 +835,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   uint8_t  decoderState = 0;   // UTF8 decoder state        - not for user access
   uint16_t decoderBuffer;      // Unicode code-point buffer - not for user access
 
+  const uint16_t* background_data = NULL;
+
  //--------------------------------------- private ------------------------------------//
  private:
            // Legacy begin and end prototypes - deprecated TODO: delete

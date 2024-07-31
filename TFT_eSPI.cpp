@@ -3247,7 +3247,15 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
       else {  // big size or clipped
         for (int8_t j = 0; j < 8; j++) {
           if (line & 0x1) fillRect(x + (i * size), y + (j * size), size, size, color);
-          else if (fillbg) fillRect(x + i * size, y + j * size, size, size, bg);
+          else if (fillbg) {
+            if(background_data) {
+              for(uint8_t k = 0; k < size; k++) {
+                pushImage(x + i * size, y + j * size + k, size, 1, &background_data[x + i * size + (y + j * size + k) * _width]);
+              }
+            } else {
+              fillRect(x + i * size, y + j * size, size, size, bg);
+            }
+          }
           line >>= 1;
         }
       }
