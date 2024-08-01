@@ -3219,10 +3219,20 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
     for (int8_t j = 0; j < 8; j++) {
       for (int8_t k = 0; k < 5; k++ ) {
         if (column[k] & mask) {tft_Write_16(color);}
-        else {tft_Write_16(bg);}
+        else {
+          if(background_data) {
+            tft_Write_16S(pgm_read_dword(&background_data[x + k + (y + j) * _width]));
+          } else {
+            tft_Write_16(bg);
+          }
+        }
       }
       mask <<= 1;
-      tft_Write_16(bg);
+      if(background_data) {
+        tft_Write_16S(pgm_read_dword(&background_data[x + 5 + (y + j) * _width]));
+      } else {
+        tft_Write_16(bg);
+      }
     }
 
     end_tft_write();
