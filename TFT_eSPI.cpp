@@ -3321,7 +3321,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
             }
             hpc++;
           } else {
-           if (hpc) {
+            if (hpc) {
               if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
               else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
               hpc = 0;
@@ -5517,6 +5517,25 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 
 
 /***************************************************************************************
+** Function name:           drawStringF
+** Description :            draw formatted string with padding if it is defined
+***************************************************************************************/
+int16_t TFT_eSPI::drawStringF(const char *string, int32_t poX, int32_t poY, ...)
+{
+  va_list args;
+  va_start(args, poY);
+  int16_t len = vsnprintf(NULL, 0, string, args);
+  va_end(args);
+
+  char buffer[len + 1];
+  va_start(args, poY);
+  vsnprintf(buffer, len + 1, string, args);
+  va_end(args);
+
+  return drawString(buffer, poX, poY);
+}
+
+/***************************************************************************************
 ** Function name:           drawString (with or without user defined font)
 ** Description :            draw string with padding if it is defined
 ***************************************************************************************/
@@ -5820,7 +5839,16 @@ int16_t TFT_eSPI::drawNumber(long long_num, int32_t poX, int32_t poY)
 {
   isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
-  ltoa(long_num, str, 10);
+  if(textdatum == TR_DATUM || textdatum == BR_DATUM || textdatum == CR_DATUM) {
+    uint8_t num_of_digits = long_num == 0 ? 1 : log10(abs(long_num)) + 1;
+    uint8_t i = 0;
+    for(; i < 11 - num_of_digits; i++) {
+      str[i] = ' ';
+    }
+    ltoa(long_num, str + i, 10);
+  } else {
+    ltoa(long_num, str, 10);
+  }
   return drawString(str, poX, poY, textfont);
 }
 
@@ -5828,7 +5856,16 @@ int16_t TFT_eSPI::drawNumber(long long_num, int32_t poX, int32_t poY, uint8_t fo
 {
   isDigits = true; // Eliminate jiggle in monospaced fonts
   char str[12];
-  ltoa(long_num, str, 10);
+  if(textdatum == TR_DATUM || textdatum == BR_DATUM || textdatum == CR_DATUM) {
+    uint8_t num_of_digits = long_num == 0 ? 1 : log10(abs(long_num)) + 1;
+    uint8_t i = 0;
+    for(; i < 11 - num_of_digits; i++) {
+      str[i] = ' ';
+    }
+    ltoa(long_num, str + i, 10);
+  } else {
+    ltoa(long_num, str, 10);
+  }
   return drawString(str, poX, poY, font);
 }
 
