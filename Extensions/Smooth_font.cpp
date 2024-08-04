@@ -372,7 +372,13 @@ void TFT_eSPI::drawGlyph(uint16_t code)
   if (code < 0x21)
   {
     if (code == 0x20) {
-      if (_fillbg) fillRect(bg_cursor_x, cursor_y, (cursor_x + gFont.spaceWidth) - bg_cursor_x, gFont.yAdvance, bg);
+      if (_fillbg) {
+        if(background_data) {
+          fillRectBackground(bg_cursor_x, cursor_y, (cursor_x + gFont.spaceWidth) - bg_cursor_x, gFont.yAdvance);
+        } else {
+          fillRect(bg_cursor_x, cursor_y, (cursor_x + gFont.spaceWidth) - bg_cursor_x, gFont.yAdvance, bg);
+        }
+      }
       cursor_x += gFont.spaceWidth;
       bg_cursor_x = cursor_x;
       last_cursor_x = cursor_x;
@@ -440,7 +446,11 @@ void TFT_eSPI::drawGlyph(uint16_t code)
         fillheight = gFont.maxAscent - gdY[gNum];
         // Could be negative
         if (fillheight > 0) {
-          fillRect(bg_cursor_x, cursor_y, fillwidth, fillheight, textbgcolor);
+          if(background_data) {
+            fillRectBackground(bg_cursor_x, cursor_y, fillwidth, fillheight);
+          } else {
+            fillRect(bg_cursor_x, cursor_y, fillwidth, fillheight, textbgcolor);
+          }
         }
       }
       else {
@@ -449,12 +459,22 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       }
 
       // Fill any area to left of glyph                              
-      if (bg_cursor_x < cx) fillRect(bg_cursor_x, cy, cx - bg_cursor_x, gHeight[gNum], textbgcolor);
+      if (bg_cursor_x < cx) {
+        if(background_data) {
+          fillRectBackground(bg_cursor_x, cy, cx - bg_cursor_x, gHeight[gNum]);
+        } else {
+          fillRect(bg_cursor_x, cy, cx - bg_cursor_x, gHeight[gNum], textbgcolor);
+        }
+      }
       // Set x position in glyph area where background starts
       if (bg_cursor_x > cx) bx = bg_cursor_x - cx;
       // Fill any area to right of glyph
       if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum]) {
-        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
+        if(background_data) {
+          fillRectBackground(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum]);
+        } else {
+          fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
+        }
       }
     }
 
@@ -487,7 +507,14 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
         if (pixel)
         {
-          if (bl) { drawFastHLine( bxs, y + cy, bl, bg); bl = 0; }
+          if (bl) { 
+            if (background_data) {
+              fillRectBackground(bxs, y + cy, bl, 1);
+            } else {
+              drawFastHLine( bxs, y + cy, bl, bg);
+            }
+            bl = 0;
+          }
           if (pixel != 0xFF)
           {
             if (fl) {
@@ -496,6 +523,11 @@ void TFT_eSPI::drawGlyph(uint16_t code)
               fl = 0;
             }
             if (getColor) bg = getColor(x + cx, y + cy);
+            if (background_data) 
+            {
+              bg = pgm_read_dword(&background_data[(y + cy) * width() + x + cx]);
+              bg = (bg<<8) | (bg>>8); // Swap byte order
+            }
             drawPixel(x + cx, y + cy, alphaBlend(pixel, fg, bg));
           }
           else
@@ -523,7 +555,11 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     if (fillwidth > 0) {
       fillheight = (cursor_y + gFont.yAdvance) - (cy + gHeight[gNum]);
       if (fillheight > 0) {
-        fillRect(bg_cursor_x, cy + gHeight[gNum], fillwidth, fillheight, textbgcolor);
+        if(background_data) {
+          fillRectBackground(bg_cursor_x, cy + gHeight[gNum], fillwidth, fillheight);
+        } else {
+          fillRect(bg_cursor_x, cy + gHeight[gNum], fillwidth, fillheight, textbgcolor);
+        }
       }
     }
 

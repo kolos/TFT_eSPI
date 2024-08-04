@@ -3259,9 +3259,7 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
           if (line & 0x1) fillRect(x + (i * size), y + (j * size), size, size, color);
           else if (fillbg) {
             if(background_data) {
-              for(uint8_t k = 0; k < size; k++) {
-                pushImage(x + i * size, y + j * size + k, size, 1, &background_data[x + i * size + (y + j * size + k) * _width]);
-              }
+              fillRectBackground(x + i * size, y + j * size, size, size);
             } else {
               fillRect(x + i * size, y + j * size, size, size, bg);
             }
@@ -3308,19 +3306,27 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
 
       // GFXFF rendering speed up
       uint16_t hpc = 0; // Horizontal foreground pixel count
+      uint16_t hbc = 0; // Horizontal background pixel count
       for(yy=0; yy<h; yy++) {
         for(xx=0; xx<w; xx++) {
           if(bit == 0) {
             bits = pgm_read_byte(&bitmap[bo++]);
             bit  = 0x80;
           }
-          if(bits & bit) hpc++;
-          else {
+          if(bits & bit) {
+            if (hbc) {
+              if(size == 1) drawFastHLine(x+xo+xx-hbc, y+yo+yy, hbc, bg);
+              else fillRect(x+(xo16+xx-hbc)*size, y+(yo16+yy)*size, size*hbc, size, bg);
+              hbc = 0;
+            }
+            hpc++;
+          } else {
            if (hpc) {
               if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
               else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-              hpc=0;
+              hpc = 0;
             }
+            hbc++;
           }
           bit >>= 1;
         }
@@ -3328,7 +3334,12 @@ void TFT_eSPI::drawChar(int32_t x, int32_t y, uint16_t c, uint32_t color, uint32
         if (hpc) {
           if(size == 1) drawFastHLine(x+xo+xx-hpc, y+yo+yy, hpc, color);
           else fillRect(x+(xo16+xx-hpc)*size, y+(yo16+yy)*size, size*hpc, size, color);
-          hpc=0;
+          hpc = 0;
+        }
+        if (hbc) {
+          if(size == 1) drawFastHLine(x+xo+xx-hbc, y+yo+yy, hbc, bg);
+          else fillRect(x+(xo16+xx-hbc)*size, y+(yo16+yy)*size, size*hbc, size, bg);
+          hbc = 0;
         }
       }
 
@@ -4710,6 +4721,20 @@ void TFT_eSPI::fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t col
   end_tft_write();
 }
 
+
+
+
+/***************************************************************************************
+** Function name:           fillRectBackground
+** Description:             draw a filled rectangle with a background data
+***************************************************************************************/
+void TFT_eSPI::fillRectBackground(int32_t x, int32_t y, int32_t w, int32_t h)
+{
+  for(uint8_t i = 0; i < h; i++)
+  {
+    pushImage(x, y + i, w, 1, &background_data[x + (y + i) * _width]);
+  }
+}
 
 /***************************************************************************************
 ** Function name:           fillRectVGradient

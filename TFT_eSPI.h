@@ -441,7 +441,8 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
                    drawLine(int32_t xs, int32_t ys, int32_t xe, int32_t ye, uint32_t color),
                    drawFastVLine(int32_t x, int32_t y, int32_t h, uint32_t color),
                    drawFastHLine(int32_t x, int32_t y, int32_t w, uint32_t color),
-                   fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color);
+                   fillRect(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color),
+                   fillRectBackground(int32_t x, int32_t y, int32_t w, int32_t h);
 
   virtual int16_t  drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font),
                    drawChar(uint16_t uniCode, int32_t x, int32_t y),
