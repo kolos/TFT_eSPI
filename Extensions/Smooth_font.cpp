@@ -239,7 +239,7 @@ void TFT_eSPI::loadMetrics(void)
     bitmapPtr += gWidth[gNum] * gHeight[gNum];
 
     gNum++;
-    yield();
+    delay(0);
   }
 
   gFont.yAdvance = gFont.maxAscent + gFont.maxDescent;
