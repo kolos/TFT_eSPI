@@ -5920,6 +5920,14 @@ int16_t TFT_eSPI::drawFloat(float floatNumber, uint8_t dp, int32_t poX, int32_t 
   // Get integer part
   uint32_t temp = (uint32_t)floatNumber;
 
+  // Pad with spaces for right justification
+  if(textdatum == TR_DATUM || textdatum == BR_DATUM || textdatum == CR_DATUM) {
+    uint8_t num_of_digits = temp == 0 ? 1 : log10(temp) + 1;
+    for(; ptr < 7 - num_of_digits; ptr++) {
+      str[ptr] = ' ';
+    }
+  }
+  
   // Put integer part into array
   ltoa(temp, str + ptr, 10);
 
